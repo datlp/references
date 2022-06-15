@@ -2,8 +2,32 @@ REG_MOVIE_EXTENSIONS =
   /[.](avi|mpg|mpe|mpeg|asf|wmv|mov|qt|rm|mp4|flv|m4v|webm|ogv|ogg|mkv|ts|tsv)\t/;
 CODES = `MXGS`;
 
-function genCode(code = 'star') {text =Array(15).fill(code).map((code, index) =>`${code}-${index} ${code}_${index} ${code}${index} ${code}00${index}`).join(' ') + ` ${code}0000 ${code}`;return (text || '').split(' ');};
-function download(filename, text) {var element = document.createElement('a');element.setAttribute('href','data:text/plain;charset=utf-8,' + encodeURIComponent(text));element.setAttribute('download',new Date().getTime() + ' ' + filename + '.txt');element.style.display = 'none';document.body.appendChild(element);element.click();document.body.removeChild(element);}
+function genCode(code = 'star') {
+  text =
+    Array(15)
+      .fill(code)
+      .map(
+        (code, index) =>
+          `${code}-${index} ${code}_${index} ${code}${index} ${code}00${index}`
+      )
+      .join(' ') + ` ${code}0000 ${code}`;
+  return (text || '').split(' ');
+}
+function download(filename, text) {
+  var element = document.createElement('a');
+  element.setAttribute(
+    'href',
+    'data:text/plain;charset=utf-8,' + encodeURIComponent(text)
+  );
+  element.setAttribute(
+    'download',
+    new Date().getTime() + ' ' + filename + '.txt'
+  );
+  element.style.display = 'none';
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}
 
 CODES = CODES.split('\n').filter((code) => code);
 async function recursion(index = 0) {
