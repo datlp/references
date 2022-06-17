@@ -1,0 +1,23 @@
+(()=>{
+document.querySelectorAll('.dialogContainer,.dialogBackdropOpened').forEach(dialog=>{dialog.remove()});
+const searchId = "embyinput0"
+const searchKeyList ="abcdefghijklmnopqrstuvwxyz".split("")
+var event = new Event('input', { bubbles: true });
+
+for (let i=0; i<searchKeyList.length; i++) {
+task(i);
+}
+
+function task(i) {
+setTimeout(function() {
+    let element = document.getElementById(searchId);
+    element.value=searchKeyList[i]
+    element.dispatchEvent(event);
+ [...document.querySelectorAll('.card-withuserdata[data-type="Person"] button[data-isfavorite="false"]')].forEach(person=>{person.click();});
+   
+}, 1000 * i);
+
+}
+})();
+// Try fetch all Person infor
+[...document.querySelectorAll('.card-withuserdata[data-type="Person"] button[data-action="menu"]')].forEach(menu=>{menu.click();})
