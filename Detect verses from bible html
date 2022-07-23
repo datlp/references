@@ -1,0 +1,47 @@
+document.querySelectorAll('.chapter').forEach(chapterEle=>{
+    chapterEle.querySelectorAll('.verse').forEach(verseEle=>{
+        verseEle.dataset.chapter_usfm = chapterEle.dataset.usfm
+    })
+})
+function download(filename, text) {
+
+    if(!filename) return;
+    var pom = document.createElement('a');
+    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    pom.setAttribute('download', filename);
+
+    if (document.createEvent) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        pom.dispatchEvent(event);
+    } else {
+        pom.click();
+    }
+}
+function stringToSlug(str) {
+  // remove accents
+  var from = "àáãảạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệđùúủũụưừứửữựòóỏõọôồốổỗộơờớởỡợìíỉĩịäëïîöüûñçýỳỹỵỷ",
+      to   = "aaaaaaaaaaaaaaaaaeeeeeeeeeeeduuuuuuuuuuuoooooooooooooooooiiiiiaeiiouuncyyyyy";
+  for (var i=0, l=from.length ; i < l ; i++) {
+    str = str.replace(RegExp(from[i], "gi"), to[i]);
+  }
+
+  str = str.toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\-]/g, '-')
+        .replace(/-+/g, '-');
+
+  return str;
+}
+let obj = {};
+document.querySelectorAll('.verse').forEach((ele,index)=>{
+    if(!obj[ele.dataset.usfm]){
+        obj[ele.dataset.usfm]={content:"",order:index,usfm:`KJV.${ele.dataset.usfm}`,chapter:`KJV.${ele.dataset.chapter_usfm}`}
+        
+    }
+    ele.querySelectorAll(`.content`).forEach(ele2=>{
+        obj[ele.dataset.usfm].content+=ele2.innerText
+    })
+})
+text = Object.keys(obj).map(keyname=>obj[keyname]).sort((a,b)=>a.order - b.order).map(({usfm,chapter,content})=>`${usfm}\t${chapter}\t${content}\t${stringToSlug(content).replaceAll(/[ ]{2,}/g," ")}`).join('\n')
+download('test.txt',text)
