@@ -28,15 +28,15 @@ function stringToSlug(str) {
 
   str = str.toLowerCase()
         .trim()
-        .replace(/[^a-z0-9\-]/g, '-')
-        .replace(/-+/g, '-');
+        .replace(/[^a-z0-9\-]/g, ' ')
+        .replace(/-+/g, ' ');
 
   return str;
 }
 let obj = {};
 document.querySelectorAll('.verse').forEach((ele,index)=>{
     if(!obj[ele.dataset.usfm]){
-        obj[ele.dataset.usfm]={content:"",order:index,usfm:`KJV.${ele.dataset.usfm}`,chapter:`KJV.${ele.dataset.chapter_usfm}`}
+        obj[ele.dataset.usfm]={content:"",order:index,usfm:`KJV.${ele.dataset.usfm}`,chapter:`VIE1925.${ele.dataset.chapter_usfm}`}
         
     }
     ele.querySelectorAll(`.content`).forEach(ele2=>{
