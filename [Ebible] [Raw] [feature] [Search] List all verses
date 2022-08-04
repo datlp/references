@@ -1,0 +1,47 @@
+text = "";
+document.querySelectorAll(".verse").forEach((verse, verseIndex) => {
+  value = [...verse.querySelectorAll(".content")]
+    .map((content) => content.innerText)
+    .join(" ")
+    .replaceAll(/[ ]{2,}/g, " ")
+    .replaceAll(/(\t)|(\n)/g, "");
+  if (value)
+    text +=
+      "VIE1925." +
+      verse.dataset.usfm +
+      "\tVIE1925\t" +
+      verseIndex +
+      "\t" +
+      value +
+      "\t" +
+      stringToSlug(value) +
+      "\n";
+});
+download("text.txt", text);
+function download(filename, text) {
+  var element = document.createElement("a");
+  element.setAttribute(
+    "href",
+    "data:text/plain;charset=utf-8," + encodeURIComponent(text)
+  );
+  element.setAttribute("download", new Date().getTime() + " " + filename);
+  element.style.display = "none";
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}
+function stringToSlug(str) {
+  var from =
+      "àáãảạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệđùúủũụưừứửữựòóỏõọôồốổỗộơờớởỡợìíỉĩịäëïîöüûñçýỳỹỵỷ",
+    to =
+      "aaaaaaaaaaaaaaaaaeeeeeeeeeeeduuuuuuuuuuuoooooooooooooooooiiiiiaeiiouuncyyyyy";
+  for (var i = 0, l = from.length; i < l; i++) {
+    str = str.replace(RegExp(from[i], "gi"), to[i]);
+  }
+  str = str
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\-]/g, "")
+    .replace(/-+/g, "");
+  return str;
+}
