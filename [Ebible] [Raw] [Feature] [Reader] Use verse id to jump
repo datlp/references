@@ -1,0 +1,25 @@
+document.querySelectorAll('.note').forEach(item=>item.remove());
+document.querySelectorAll('.chapter').forEach(chapter=>{
+    [...chapter.children].forEach(child=>{
+        if(child.querySelectorAll('.verse').length===0) child.remove()
+    })
+});
+document.querySelectorAll('.verse').forEach(verse=>{
+    const usfm = verse.dataset.usfm
+    verse.querySelectorAll('.label').forEach((label,index) =>{
+        label.innerText = `<sup id="${usfm}">${label.innerText}</sup>`
+    })
+    verse.querySelectorAll('.content').forEach((content,index) =>{
+        if(content.innerText) content.innerText = `<span data-verse="${usfm}">${content.innerText}</span>`
+    })
+})
+download('index.html',document.querySelector('body').innerText.replaceAll('\n','<br>'))
+function download(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', new Date().getTime() + ' ' + filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
