@@ -1,41 +1,10 @@
 let obj = {};
 `FSDSS-509
 FSDSS-488
-NYKD-122
-NYKD-122
 FSDSS-478
-NYKD-122
-NYKD-122
-NYKD-122
-NYKD-122
-NYKD-12231
-NYKD-12231
-NYKD-12231
-NYKD-12231
-MYBA-048
-MYBA-048
-MVSD-517
-MVSD-517
-MVSD-516
-MVSD-516
-MVSD-515
-MVSD-515
-MUKC-026
-MUKC-025
-MUKC-025
-MUDR-197
-MUDR-197
-MUCD-262
-MRHP-010
-MMKZ-115
-MMKZ-115
-MKON-081
-MKON-081
-MIZD-287
-JJBK-057
-HRD-268
-HMN-209
-HMN-209
+FSDSS-473
+KBI-083
+KBI-082
 `.split('\n').forEach((item="",_index)=>{
     const values = item.split('-');
     if(values.length > 1) {
@@ -52,4 +21,9 @@ HMN-209
     }
     
 })
-    obj
+test = Object.keys(obj).map(key=>{
+    const {_index,...rest} = obj[key];
+    const digits = Object.keys(rest).map(value=>({digitial:value,number:rest[value]})).sort((a,b)=>a.number>b.number?-1:1);
+    return {code:key,_index,digits}
+})
+test
