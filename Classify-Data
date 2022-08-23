@@ -26,4 +26,4 @@ test = Object.keys(obj).map(key=>{
     const digits = Object.keys(rest).map(value=>({digitial:value,number:rest[value]})).sort((a,b)=>a.number>b.number?-1:1);
     return {code:key,_index,digits}
 })
-test
+console.log(test.map(item=>`${item.code}\t${item.digits.length}\t${item.digits.map(digi=>`${digi.digitial},${digi.number}`).join('\t')}`).join('\n'))
