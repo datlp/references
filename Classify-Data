@@ -1,0 +1,55 @@
+let obj = {};
+`FSDSS-509
+FSDSS-488
+NYKD-122
+NYKD-122
+FSDSS-478
+NYKD-122
+NYKD-122
+NYKD-122
+NYKD-122
+NYKD-12231
+NYKD-12231
+NYKD-12231
+NYKD-12231
+MYBA-048
+MYBA-048
+MVSD-517
+MVSD-517
+MVSD-516
+MVSD-516
+MVSD-515
+MVSD-515
+MUKC-026
+MUKC-025
+MUKC-025
+MUDR-197
+MUDR-197
+MUCD-262
+MRHP-010
+MMKZ-115
+MMKZ-115
+MKON-081
+MKON-081
+MIZD-287
+JJBK-057
+HRD-268
+HMN-209
+HMN-209
+`.split('\n').forEach((item="",_index)=>{
+    const values = item.split('-');
+    if(values.length > 1) {
+        if(!obj[values[0]]){
+        obj[values[0]]={};
+        obj[values[0]][values[1].length]=1;
+        obj[values[0]]._index=_index
+    } else {
+         if(obj[values[0]][values[1].length]) 
+             obj[values[0]][values[1].length]++;
+            else 
+             obj[values[0]][values[1].length]=1;
+    }
+    }
+    
+})
+    obj
