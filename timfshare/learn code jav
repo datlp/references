@@ -1,18 +1,7 @@
 REG_MOVIE_EXTENSIONS =
   /[.](avi|mpg|mpe|mpeg|asf|wmv|mov|qt|rm|mp4|flv|m4v|webm|ogv|ogg|mkv|ts|tsv)/;
 PAGESIZE = 10;
-CODES = `HONE
-WPSL
-WO
-SW
-SVDVD
-SUN
-STARS
-SDTH
-SDNM
-SDMUA
-SDJS
-SDDE`
+CODES = `STARS`
 CODES = CODES.toLowerCase()
   .split('\n')
   .filter((code) => code);
