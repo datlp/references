@@ -107,14 +107,33 @@ function download(filename, text) {
 }
 
 
-chapter = document.querySelector('.chapter')
-    chapter.outerHTML=`<span>≤→${chapter.dataset.usfm}←</span>${chapter.outerHTML}<span>≥</span>`
-document.querySelectorAll('.verse').forEach(verse=>{
-    const label = verse.querySelector('.label')?.innerText||'';
+document.querySelectorAll('.chapter .heading').forEach(heading=>{
+        heading.innerText = `«${ heading.innerText}»`
+})
+document.querySelectorAll('.chapter .verse').forEach(verse=>{
+    label = verse.querySelector('.label')?.innerText||'';
     label && verse.querySelector('.label')?.remove();
     verse.querySelectorAll('.content').forEach(content=>{
     content.innerText = `«┌${label}┘→${verse.dataset.usfm}←${content.innerText}»`
     })
 })
-text = document.querySelector('.chapter').innerText.replaceAll('\n','«<br/>»').replaceAll('\t','')
-text.match(/«.*?»/gi)
+fileContent='';document.querySelectorAll('.chapter').forEach(chapter=>{
+text = chapter.innerText.replaceAll(/[\n]{1,}/g,'«<br/>»').replaceAll('\t','');
+fileContent+=`${chapter.dataset.usfm}\t${text}\n`
+})
+download('e',fileContent)
+function download(filename, text) {
+    if(!filename) return;
+    var pom = document.createElement('a');
+    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    pom.setAttribute('download', filename);
+
+    if (document.createEvent) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        pom.dispatchEvent(event);
+    } else {
+        pom.click();
+    }
+}
+download('e',arr.map(({audio})=>Object.keys(audio?.[0]?.download_urls).map(keys=>audio?.[0]?.download_urls[keys]).join('\t')).join('\n'))
