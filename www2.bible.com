@@ -27,3 +27,14 @@ async function recursion (url,count=0 ){
 } 
 
 await recursion('https://nodejs.bible.com/api/bible/chapter/3.1?id=8&reference=GEN.1',0)
+chapter = document.querySelector('.chapter')
+    chapter.outerHTML=`<span>≤→${chapter.dataset.usfm}←</span>${chapter.outerHTML}<span>≥</span>`
+document.querySelectorAll('.verse').forEach(verse=>{
+    const label = verse.querySelector('.label')?.innerText||'';
+    label && verse.querySelector('.label')?.remove();
+    verse.querySelectorAll('.content').forEach(content=>{
+    content.innerText = `«┌${label}┘→${verse.dataset.usfm}←${content.innerText}»`
+    })
+})
+text = document.querySelector('.chapter').innerText.replaceAll('\n','«<br/>»').replaceAll('\t','')
+text.match(/«.*?»/gi)
