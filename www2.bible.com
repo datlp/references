@@ -105,6 +105,17 @@ function download(filename, text) {
         pom.click();
     }
 }
+
+//
+
+obj = {};
+fileContent.match(/«.*?»/gi).map((item,index)=>{
+    const split = item.slice(2,-1).split('←')
+    if(obj[split[0]]) obj[split[0]].content+=split[1]
+    else obj[split[0]]={content:split[1],index}
+})
+obj
+
 document.querySelectorAll('.chapter>.label').forEach(label=>{label.remove()})
 document.querySelectorAll('.chapter .heading').forEach(heading=>{heading.innerText = `≤${heading.innerText}≥`})
 document.querySelectorAll('.verse>.label').forEach(label=>{label.innerText=`◖${label.innerText}◗`})
