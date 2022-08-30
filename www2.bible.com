@@ -1,3 +1,35 @@
+function convertHTML(content) {
+  return content
+    .match(/≈.*?≈|≤.*?≥|◖.*?◗|«.*?»/gi)
+    .map((text) =>
+      text.replaceAll(/◖|◗|≤|≥|«|»|→|←|≈/g, (char) => {
+        switch (char) {
+          case "◖":
+            return "<sup>";
+          case "◗":
+            return `</sup>`;
+          case "≤":
+            return '<strong data-type="heading">';
+          case "≥":
+            return "</strong>";
+          case "«":
+            return "<span ";
+          case "»":
+            return `</span>`;
+          case "→":
+            return 'data-usfm="';
+          case "←":
+            return '">';
+          case "≈":
+            return "";
+        }
+        return char;
+      })
+    )
+    .join("");
+}
+
+
 hashBible = {
   37: "CEB",
   42: "CPDV",
