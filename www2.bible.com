@@ -1,3 +1,20 @@
+// ---------------------------------------------------------
+// ◖sup◗: verse label
+// ≤strong≥: chapter label
+// «span»: verse content
+// →data-usfm←: verse usfm
+// ≈<br>≈: line
+
+function convertJSON(content) {
+  obj = {};
+  content.match(/«.*?»/gi).map((item, index) => {
+    const split = item.slice(2, -1).split("←");
+    if (obj[split[0]]) obj[split[0]].content += split[1];
+    else obj[split[0]] = { content: split[1], index };
+  });
+  return obj;
+}
+
 function convertHTML(content) {
   return content
     .match(/≈.*?≈|≤.*?≥|◖.*?◗|«.*?»/gi)
@@ -28,7 +45,6 @@ function convertHTML(content) {
     )
     .join("");
 }
-
 
 hashBible = {
   37: "CEB",
@@ -106,119 +122,175 @@ hashBible = {
   1365: "MP1650",
   3010: "TEG",
 };
-async function recursion (url,count=0 ){
-    if(!url) return;
-    await fetch(url).then(res=>res.json()).then((result) =>{
-        const {reference,next,content,...rest} = result ;
-        index = `000000${count}`.slice(-7);
-        count++;
-        title = `${hashBible[reference.version_id]}.${index}.${reference.usfm.join(' ').replaceAll(/[.][\d]{1,}/g, found => {
-    return found.replace(/[\d]{1,}/,"0000$&").replace(/[\d]{1,}/,found1=>found1.slice(-3))
-})}`;
-        delete(result.content);
-        download(title+'.json',JSON.stringify(result)+',\n');
-        download(title+'.html',content+'\n');
-        recursion(`https://nodejs.bible.com/api/bible/chapter/3.1?id=${next.version_id}&reference=${next.usfm?.[0]}`,count)
-    })
-} 
+async function recursion(url, count = 0) {
+  if (!url) return;
+  await fetch(url)
+    .then((res) => res.json())
+    .then((result) => {
+      const { reference, next, content, ...rest } = result;
+      index = `000000${count}`.slice(-7);
+      count++;
+      title = `${hashBible[reference.version_id]}.${index}.${reference.usfm
+        .join(" ")
+        .replaceAll(/[.][\d]{1,}/g, (found) => {
+          return found
+            .replace(/[\d]{1,}/, "0000$&")
+            .replace(/[\d]{1,}/, (found1) => found1.slice(-3));
+        })}`;
+      delete result.content;
+      download(title + ".json", JSON.stringify(result) + ",\n");
+      download(title + ".html", content + "\n");
+      recursion(
+        `https://nodejs.bible.com/api/bible/chapter/3.1?id=${next.version_id}&reference=${next.usfm?.[0]}`,
+        count
+      );
+    });
+}
 
-await recursion('https://nodejs.bible.com/api/bible/chapter/3.1?id=193&reference=GEN.1',0)
+await recursion(
+  "https://nodejs.bible.com/api/bible/chapter/3.1?id=193&reference=GEN.1",
+  0
+);
 function download(filename, text) {
-    if(!filename) return;
-    var pom = document.createElement('a');
-    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    pom.setAttribute('download', filename);
+  if (!filename) return;
+  var pom = document.createElement("a");
+  pom.setAttribute(
+    "href",
+    "data:text/plain;charset=utf-8," + encodeURIComponent(text)
+  );
+  pom.setAttribute("download", filename);
 
-    if (document.createEvent) {
-        var event = document.createEvent('MouseEvents');
-        event.initEvent('click', true, true);
-        pom.dispatchEvent(event);
-    } else {
-        pom.click();
-    }
+  if (document.createEvent) {
+    var event = document.createEvent("MouseEvents");
+    event.initEvent("click", true, true);
+    pom.dispatchEvent(event);
+  } else {
+    pom.click();
+  }
 }
 
 //
 
 obj = {};
-fileContent.match(/«.*?»/gi).map((item,index)=>{
-    const split = item.slice(2,-1).split('←')
-    if(obj[split[0]]) obj[split[0]].content+=split[1]
-    else obj[split[0]]={content:split[1],index}
-})
-obj
+fileContent.match(/«.*?»/gi).map((item, index) => {
+  const split = item.slice(2, -1).split("←");
+  if (obj[split[0]]) obj[split[0]].content += split[1];
+  else obj[split[0]] = { content: split[1], index };
+});
+obj;
 
-document.querySelectorAll('.chapter>.label').forEach(label=>{label.remove()})
-document.querySelectorAll('.chapter .heading').forEach(heading=>{heading.innerText = `≤${heading.innerText}≥`})
-document.querySelectorAll('.verse>.label').forEach(label=>{label.innerText=`◖${label.innerText}◗`})
-document.querySelectorAll('.chapter .verse').forEach(verse=>{
-    verse.querySelectorAll('.content').forEach(content=>{
-    content.innerText = `«→${verse.dataset.usfm}←${content.innerText}»`
-    })
-})
-fileContent='';document.querySelectorAll('.chapter').forEach(chapter=>{
-text = chapter.innerText.replaceAll(/[\n]{1,}/g,'≈<br>≈').replaceAll('\t','');
-fileContent+=`${chapter.dataset.usfm}\t${text}\n`
-})
-download('e',fileContent)
+document.querySelectorAll(".chapter>.label").forEach((label) => {
+  label.remove();
+});
+document.querySelectorAll(".chapter .heading").forEach((heading) => {
+  heading.innerText = `≤${heading.innerText}≥`;
+});
+document.querySelectorAll(".verse>.label").forEach((label) => {
+  label.innerText = `◖${label.innerText}◗`;
+});
+document.querySelectorAll(".chapter .verse").forEach((verse) => {
+  verse.querySelectorAll(".content").forEach((content) => {
+    content.innerText = `«→${verse.dataset.usfm}←${content.innerText}»`;
+  });
+});
+fileContent = "";
+document.querySelectorAll(".chapter").forEach((chapter) => {
+  text = chapter.innerText
+    .replaceAll(/[\n]{1,}/g, "≈<br>≈")
+    .replaceAll("\t", "");
+  fileContent += `${chapter.dataset.usfm}\t${text}\n`;
+});
+download("e", fileContent);
 function download(filename, text) {
-    if(!filename) return;
-    var pom = document.createElement('a');
-    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    pom.setAttribute('download', filename);
+  if (!filename) return;
+  var pom = document.createElement("a");
+  pom.setAttribute(
+    "href",
+    "data:text/plain;charset=utf-8," + encodeURIComponent(text)
+  );
+  pom.setAttribute("download", filename);
 
-    if (document.createEvent) {
-        var event = document.createEvent('MouseEvents');
-        event.initEvent('click', true, true);
-        pom.dispatchEvent(event);
-    } else {
-        pom.click();
-    }
+  if (document.createEvent) {
+    var event = document.createEvent("MouseEvents");
+    event.initEvent("click", true, true);
+    pom.dispatchEvent(event);
+  } else {
+    pom.click();
+  }
 }
 
-fileContent.match(/≈.*?≈|≤.*?≥|◖.*?◗|«.*?»/gi).map(text=>text.replaceAll(/◖|◗|≤|≥|«|»|→|←|≈/g,replace=>html(replace))).join('')
-function html (char){
-    switch(char){
-        case '◖': return '<sup>'
-        case '◗': return `</sup>`
-        case '≤': return '<strong data-type="heading">'
-        case '≥': return '</strong>'
-        case '«': return '<span '
-        case '»': return `</span>`
-        case '→': return 'data-usfm="'
-        case '←': return '">'
-        case '≈': return ''
-    }
+fileContent
+  .match(/≈.*?≈|≤.*?≥|◖.*?◗|«.*?»/gi)
+  .map((text) =>
+    text.replaceAll(/◖|◗|≤|≥|«|»|→|←|≈/g, (replace) => html(replace))
+  )
+  .join("");
+function html(char) {
+  switch (char) {
+    case "◖":
+      return "<sup>";
+    case "◗":
+      return `</sup>`;
+    case "≤":
+      return '<strong data-type="heading">';
+    case "≥":
+      return "</strong>";
+    case "«":
+      return "<span ";
+    case "»":
+      return `</span>`;
+    case "→":
+      return 'data-usfm="';
+    case "←":
+      return '">';
+    case "≈":
+      return "";
+  }
 }
 
-// 
-document.querySelectorAll('.chapter .heading').forEach(heading=>{
-        heading.innerText = `«${ heading.innerText}»`
-})
-document.querySelectorAll('.chapter .verse').forEach(verse=>{
-    label = verse.querySelector('.label')?.innerText||'';
-    label && verse.querySelector('.label')?.remove();
-    verse.querySelectorAll('.content').forEach(content=>{
-    content.innerText = `«┌${label}┘→${verse.dataset.usfm}←${content.innerText}»`
-    })
-})
-fileContent='';document.querySelectorAll('.chapter').forEach(chapter=>{
-text = chapter.innerText.replaceAll(/[\n]{1,}/g,'«<br/>»').replaceAll('\t','');
-fileContent+=`${chapter.dataset.usfm}\t${text}\n`
-})
-download('e',fileContent)
+//
+document.querySelectorAll(".chapter .heading").forEach((heading) => {
+  heading.innerText = `«${heading.innerText}»`;
+});
+document.querySelectorAll(".chapter .verse").forEach((verse) => {
+  label = verse.querySelector(".label")?.innerText || "";
+  label && verse.querySelector(".label")?.remove();
+  verse.querySelectorAll(".content").forEach((content) => {
+    content.innerText = `«┌${label}┘→${verse.dataset.usfm}←${content.innerText}»`;
+  });
+});
+fileContent = "";
+document.querySelectorAll(".chapter").forEach((chapter) => {
+  text = chapter.innerText
+    .replaceAll(/[\n]{1,}/g, "«<br/>»")
+    .replaceAll("\t", "");
+  fileContent += `${chapter.dataset.usfm}\t${text}\n`;
+});
+download("e", fileContent);
 function download(filename, text) {
-    if(!filename) return;
-    var pom = document.createElement('a');
-    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    pom.setAttribute('download', filename);
+  if (!filename) return;
+  var pom = document.createElement("a");
+  pom.setAttribute(
+    "href",
+    "data:text/plain;charset=utf-8," + encodeURIComponent(text)
+  );
+  pom.setAttribute("download", filename);
 
-    if (document.createEvent) {
-        var event = document.createEvent('MouseEvents');
-        event.initEvent('click', true, true);
-        pom.dispatchEvent(event);
-    } else {
-        pom.click();
-    }
+  if (document.createEvent) {
+    var event = document.createEvent("MouseEvents");
+    event.initEvent("click", true, true);
+    pom.dispatchEvent(event);
+  } else {
+    pom.click();
+  }
 }
-download('e',arr.map(({audio})=>Object.keys(audio?.[0]?.download_urls).map(keys=>audio?.[0]?.download_urls[keys]).join('\t')).join('\n'))
+download(
+  "e",
+  arr
+    .map(({ audio }) =>
+      Object.keys(audio?.[0]?.download_urls)
+        .map((keys) => audio?.[0]?.download_urls[keys])
+        .join("\t")
+    )
+    .join("\n")
+);
