@@ -105,8 +105,50 @@ function download(filename, text) {
         pom.click();
     }
 }
+document.querySelectorAll('.chapter>.label').forEach(label=>{label.remove()})
+document.querySelectorAll('.chapter .heading').forEach(heading=>{heading.innerText = `≤${heading.innerText}≥`})
+document.querySelectorAll('.verse>.label').forEach(label=>{label.innerText=`◖${label.innerText}◗`})
+document.querySelectorAll('.chapter .verse').forEach(verse=>{
+    verse.querySelectorAll('.content').forEach(content=>{
+    content.innerText = `«→${verse.dataset.usfm}←${content.innerText}»`
+    })
+})
+fileContent='';document.querySelectorAll('.chapter').forEach(chapter=>{
+text = chapter.innerText.replaceAll(/[\n]{1,}/g,'≈<br>≈').replaceAll('\t','');
+fileContent+=`${chapter.dataset.usfm}\t${text}\n`
+})
+download('e',fileContent)
+function download(filename, text) {
+    if(!filename) return;
+    var pom = document.createElement('a');
+    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    pom.setAttribute('download', filename);
 
+    if (document.createEvent) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        pom.dispatchEvent(event);
+    } else {
+        pom.click();
+    }
+}
 
+fileContent.match(/≈.*?≈|≤.*?≥|◖.*?◗|«.*?»/gi).map(text=>text.replaceAll(/◖|◗|≤|≥|«|»|→|←|≈/g,replace=>html(replace))).join('')
+function html (char){
+    switch(char){
+        case '◖': return '<sup>'
+        case '◗': return `</sup>`
+        case '≤': return '<strong data-type="heading">'
+        case '≥': return '</strong>'
+        case '«': return '<span '
+        case '»': return `</span>`
+        case '→': return 'data-usfm="'
+        case '←': return '">'
+        case '≈': return ''
+    }
+}
+
+// 
 document.querySelectorAll('.chapter .heading').forEach(heading=>{
         heading.innerText = `«${ heading.innerText}»`
 })
