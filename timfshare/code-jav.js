@@ -1,5 +1,5 @@
 EXTENSIONS =
-  /(avi|mpg|mpe|mpeg|asf|wmv|mov|qt|rm|mp4|flv|m4v|webm|ogv|ogg|mkv|ts|tsv)$/;
+  /(mpg|mpe|mpeg|asf|mov|qt|rm|mp4|flv|m4v|webm|ogv|ogg|mkv|ts|tsv)$/;
 apiHeaders = {
   headers: {
     accept: "*/*",
@@ -20,71 +20,81 @@ apiHeaders = {
   body: null,
   method: "POST",
 };
-(async ()=>{
-structures  = (await fetch(
-    "https://script.google.com/macros/s/AKfycby6VQCtXEo9ZRN_aUIf85iqmKRv1KvwlOlnxiYSMA75oU-7IwjT4TVzyrnxdC77tDgPhQ/exec?_uniqueField=id&is_get_all=true&name_sheet=CodeDeep&id_spreadsheet=1j96GzNo0qvlhnBHkFlTjdJxeqmcA0VDwADS2EOub1no"
-  ).then((res) => res.json())).map(({id})=>id);
+(async () => {
+  structures  = (await fetch(
+      "https://script.google.com/macros/s/AKfycby6VQCtXEo9ZRN_aUIf85iqmKRv1KvwlOlnxiYSMA75oU-7IwjT4TVzyrnxdC77tDgPhQ/exec?_uniqueField=id&is_get_all=true&name_sheet=CodeDeep&id_spreadsheet=1j96GzNo0qvlhnBHkFlTjdJxeqmcA0VDwADS2EOub1no"
+    ).then((res) => res.json())).map(({id,prevent})=>!prevent && id).filter(item=>item);
+  
+  recursion(structures,0);
+})();
 
-recursion(0);
-})()
-
-function recursion(__index) {
-    structure = (structures[__index]);
-    if(!structure) return 
+function recursion(structures,__index) {
+  structure = structures[__index];
+  if (!structure) return;
   query = structure.replace(/-.*/, "")?.toLowerCase();
   digits = structure.match(/[*]{2,}/)?.[0]?.length;
-  filters = [
-    new RegExp(`${query}[0-9]{${digits}}`),
-    new RegExp(`${query}00[0-9]{${digits}}`),
-  ];
+  filter = new RegExp(`([.]|^)(${query}|${query}[.])[0-9]{${digits}}?[^0-9]`);
   fetchMovies(query, (movies) => {
     download(
       query,
       movies
         .map(({ name = "", ...rest }) => {
-          _name = name.toLowerCase().replaceAll(/[^0-9a-z]/g, "");
+          _name = name.toLowerCase().replaceAll(/[^0-9a-z]/g, ".")?.replace(`${query}00`,query);
           if (!_name.match(EXTENSIONS)) return;
           code = _name
-            .match(filters[0])?.[0]
+            .match(filter)?.[0]
             ?.toUpperCase()
+            ?.replaceAll(/[.]|([^0-9]$)/g,'')
             ?.replace(
               new RegExp(`[0-9]{${digits}}$`),
               (str) => `-${str.match(new RegExp(`[0-9]{${digits}}$`))}`
             );
           if (code) return { code, ...rest, name };
+            else console.log(code,filter,_name)
           return;
         })
         .filter((item) => item)
         .sort((a, b) => (a.code < b.code ? 1 : -1))
         .map(({ id, code }) => `${code}\t${id}`)
-        .join("\n")
+        .join("\n") + "\n"
     );
-    recursion(__index+1)
+    recursion(structures,__index + 1);
   });
 }
 function fetchMovies(query, callback) {
-  Promise.all(
-    Array(10)
-      .fill(0)
-      .map((_, index) =>
-        fetch(
-          `https://api.timfshare.com/v1/string-query-search?query=${query} ${index}`,
-          apiHeaders
-        ).then((res) => res.json())
-      )
-  ).then((result) => {
-    ids = {};
-    movies = [];
-    result.forEach(({ data = [] }) => {
-      data.forEach(({ id, ...rest }) => {
-        if (!ids[id]) {
-          movies.push({ id, ...rest });
-          ids[id] = true;
-        }
-      });
+  fetch(
+    `https://api.timfshare.com/v1/string-query-search?query=${query}`,
+    apiHeaders
+  )
+    .then((res) => res.json())
+    .then((result1) => {
+      if (result1.data.length > 150) {
+        Promise.all(
+          ['00',...Array(10)
+            .fill(0)]
+            .map((_, index) =>
+              fetch(
+                `https://api.timfshare.com/v1/string-query-search?query=${query}${_?`${_}`:` ${index}`}`,
+                apiHeaders
+              ).then((res) => res.json())
+            )
+        ).then((result) => {
+          ids = {};
+          movies = [];
+          result.forEach(({ data = [] }) => {
+            data.forEach(({ id, ...rest }) => {
+              if (!ids[id]) {
+                movies.push({ id, ...rest });
+                ids[id] = true;
+              }
+            });
+          });
+          callback(movies);
+        });
+      } else {
+        callback(result1.data);
+      }
     });
-    callback(movies);
-  });
 }
 
 function download(filename, text) {
