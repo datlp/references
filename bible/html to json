@@ -1,28 +1,47 @@
-document.querySelectorAll('.heading:first-child').forEach(n=>{
+result = [];
+chapters = [...document.querySelectorAll('.chapter')]
+for (let index = 0; index < chapters.length; index++) {
+    getChapter(chapters[index])
+}
+function getChapter(chapter) {
+    if(!chapter) return {};
+    arr = [];
+    chapter.querySelectorAll('.heading:first-child').forEach(n=>{
    n.innerText = n.parentNode.innerText
 })
-document.querySelectorAll('.heading').forEach(n=>{
+chapter.querySelectorAll('.heading').forEach(n=>{
    if(n.previousElementSibling) n.remove()
 })
-document.querySelectorAll('.d>.content:first-child').forEach(n=>{
+chapter.querySelectorAll('.d>.content:first-child').forEach(n=>{
    n.innerText = n.parentNode.innerText
 })
-document.querySelectorAll('.d>.content').forEach(n=>{
+chapter.querySelectorAll('.d>.content').forEach(n=>{
    if(n.previousElementSibling) n.remove()
 })
-document.querySelectorAll('.chapter>.label').forEach(n=>n.remove())
-document.querySelectorAll('.verse').forEach(n=>{
+chapter.querySelectorAll('.chapter>.label').forEach(n=>n.remove())
+chapter.querySelectorAll('.verse').forEach(n=>{
     if(!n.nextElementSibling) n.dataset.endline=true
 })
-document.querySelectorAll('.chapter .verse>.label').forEach(n=>{
+chapter.querySelectorAll('.chapter .verse>.label').forEach(n=>{
    n.parentElement.dataset.label=n.innerText;
    n.remove(); 
 })
-arr = [];
-document.querySelectorAll('.verse,.heading,.d>.content').forEach((n,order)=>{
+chapter.querySelectorAll('.verse,.heading,.d>.content').forEach((n,order)=>{
    if(n.classList.contains('verse')) arr.push({order,...n.dataset,content:n.innerText})
     if(n.classList.contains('heading')) arr.push({order,heading:true,content:n.innerText})
     if(n.classList.contains('content')) arr.push({order,desciption:true,content:n.innerText})
+    
 })
-document.querySelectorAll('.verse,.heading:first-child,.d>.content:first-child').forEach(n=>n.remove())
-JSON.stringify(arr.filter(item=>item.content))
+    result.push({id:chapter.dataset.usfm,contents:arr})
+chapter.querySelectorAll('.verse,.heading:first-child,.d>.content:first-child').forEach(n=>n.remove())
+}
+text = '' 
+result[0].contents.forEach(({heading,content,usfm,endline,label,desciption})=>
+    { 
+        if(heading)  text+=`<strong>${content}</strong><br>` 
+        if(desciption)  text+=`<strong>${content}</strong><br>` 
+    if(label)   text+=`<sup>${label}</sup>` 
+    if(usfm)   text+=`<span data-usfm="${usfm}">${content}</span>` 
+    if(endline)   text+=`<span>${content}</span><br>` }
+)
+document.querySelector('body').innerHTML=text
