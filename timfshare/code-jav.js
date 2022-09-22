@@ -23,7 +23,7 @@ apiHeaders = {
 (async () => {
   structures  = (await fetch("https://script.google.com/macros/s/AKfycby6VQCtXEo9ZRN_aUIf85iqmKRv1KvwlOlnxiYSMA75oU-7IwjT4TVzyrnxdC77tDgPhQ/exec?_uniqueField=id&is_get_all=true&name_sheet=CodeDeep&id_spreadsheet=1j96GzNo0qvlhnBHkFlTjdJxeqmcA0VDwADS2EOub1no")
   .then((res) => res.json())).filter((_)=>!_.prevent && _.id);
-  //structures = [{ code: "ssni", digits: 3, id: "ipx-•••", len: 3, status: 1 }];
+  //structures = [{ code: "hunt", digits: 3, id: "ipx-•••", len: 3, status: 1 }];
     console.log(structures)
   recursion(structures, 0);
 })();
@@ -32,7 +32,7 @@ function recursion(structures, __index) {
   let { code, digits } = structures[__index] || {};
   if (!code || !digits) return;
   code = code?.toLowerCase()?.replaceAll(' ','');
-  filter = new RegExp(`${code}[.][0-9]{${digits}}`);
+  filter = new RegExp(`${code}[.][0-9]{${digits}}[.]`);
   fetchMovies(code, (data = []) => {
     standard = data.map((result = {}) => {
       const { name = "" } = result;
@@ -47,7 +47,8 @@ function recursion(structures, __index) {
       __code = _name
         .match(filter)?.[0]
         ?.replaceAll(/[.]{1,}/g, "-")
-        ?.toUpperCase();
+        ?.toUpperCase()
+        ?.slice(0,-1);
 
       return __code ? { __code, ...result } : result;
     });
@@ -58,7 +59,7 @@ function recursion(structures, __index) {
       
     console.log(`${((__index/structures.length)*100).toFixed(0)} % - data: ${data.length} - matched: ${filterMovies.length} - ${code} - ${digits} `);
     fileContent = filterMovies
-      .map(({ id, __code }) => `${__code}\t${id}`)
+      .map(({ id, __code,name }) => `${__code}\t${id}\t${name}`)
       .join("\n");
     fileContent &&
       download(`${code} (${filterMovies.length})`, fileContent + "\n");
