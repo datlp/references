@@ -1,5 +1,5 @@
-EXTENSIONS =
-  /(mpg|mpe|mpeg|asf|mov|qt|rm|mp4|flv|m4v|webm|ogv|ogg|mkv|ts|tsv)$/;
+EXTENSIONS =  /(mpg|mpe|mpeg|asf|mov|qt|rm|mp4|flv|m4v|webm|ogv|ogg|mkv|ts|tsv)$/;
+//EXTENSIONS = /(zip|rar|7z)$/;
 apiHeaders = {
   headers: {
     accept: "*/*",
@@ -21,79 +21,86 @@ apiHeaders = {
   method: "POST",
 };
 (async () => {
-  structures  = (await fetch(
-      "https://script.google.com/macros/s/AKfycby6VQCtXEo9ZRN_aUIf85iqmKRv1KvwlOlnxiYSMA75oU-7IwjT4TVzyrnxdC77tDgPhQ/exec?_uniqueField=id&is_get_all=true&name_sheet=CodeDeep&id_spreadsheet=1j96GzNo0qvlhnBHkFlTjdJxeqmcA0VDwADS2EOub1no"
-    ).then((res) => res.json())).map(({id,prevent})=>!prevent && id).filter(item=>item);
-  
-  recursion(structures,0);
+  structures  = (await fetch("https://script.google.com/macros/s/AKfycby6VQCtXEo9ZRN_aUIf85iqmKRv1KvwlOlnxiYSMA75oU-7IwjT4TVzyrnxdC77tDgPhQ/exec?_uniqueField=id&is_get_all=true&name_sheet=CodeDeep&id_spreadsheet=1j96GzNo0qvlhnBHkFlTjdJxeqmcA0VDwADS2EOub1no")
+  .then((res) => res.json())).filter((_)=>!_.prevent && _.id);
+  //structures = [{ code: "ssni", digits: 3, id: "ipx-•••", len: 3, status: 1 }];
+    console.log(structures)
+  recursion(structures, 0);
 })();
 
-function recursion(structures,__index) {
-  structure = structures[__index];
-  if (!structure) return;
-  query = structure.replace(/-.*/, "")?.toLowerCase();
-  digits = structure.match(/[*]{2,}/)?.[0]?.length;
-  filter = new RegExp(`([.]|^)(${query}|${query}[.])[0-9]{${digits}}?[^0-9]`);
-  fetchMovies(query, (movies) => {
-    download(
-      query,
-      movies
-        .map(({ name = "", ...rest }) => {
-          _name = name.toLowerCase().replaceAll(/[^0-9a-z]/g, ".")?.replace(`${query}00`,query);
-          if (!_name.match(EXTENSIONS)) return;
-          code = _name
-            .match(filter)?.[0]
-            ?.toUpperCase()
-            ?.replaceAll(/[.]|([^0-9]$)/g,'')
-            ?.replace(
-              new RegExp(`[0-9]{${digits}}$`),
-              (str) => `-${str.match(new RegExp(`[0-9]{${digits}}$`))}`
-            );
-          if (code) return { code, ...rest, name };
-            else console.log(code,filter,_name)
-          return;
-        })
-        .filter((item) => item)
-        .sort((a, b) => (a.code < b.code ? 1 : -1))
-        .map(({ id, code }) => `${code}\t${id}`)
-        .join("\n") + "\n"
-    );
-    recursion(structures,__index + 1);
+function recursion(structures, __index) {
+  let { code, digits } = structures[__index] || {};
+  if (!code || !digits) return;
+  code = code?.toLowerCase()?.replaceAll(' ','');
+  filter = new RegExp(`${code}[.][0-9]{${digits}}`);
+  fetchMovies(code, (data = []) => {
+    standard = data.map((result = {}) => {
+      const { name = "" } = result;
+      _name = name
+        .toLowerCase()
+        .replaceAll(/[^0-9a-z]/g, ".")
+        ?.replaceAll(`${code}00`, code)
+        ?.replaceAll(/[^0-9a-z]/g, ".")
+        ?.replaceAll(/[0-9]{2,}/g, ".$&")
+        ?.replaceAll(/[.]{1,}/g, ".");
+      if (!_name.match(EXTENSIONS)?.[0]) return result;
+      __code = _name
+        .match(filter)?.[0]
+        ?.replaceAll(/[.]{1,}/g, "-")
+        ?.toUpperCase();
+
+      return __code ? { __code, ...result } : result;
+    });
+    
+    filterMovies = standard
+      .filter((item = {}) => item.__code)
+      .sort((a, b) => (a.__code < b.__code ? 1 : -1));
+      
+    console.log(`${((__index/structures.length)*100).toFixed(0)} % - data: ${data.length} - matched: ${filterMovies.length} - ${code} - ${digits} `);
+    fileContent = filterMovies
+      .map(({ id, __code }) => `${__code}\t${id}`)
+      .join("\n");
+    fileContent &&
+      download(`${code} (${filterMovies.length})`, fileContent + "\n");
+    recursion(structures, __index + 1);
   });
 }
+
 function fetchMovies(query, callback) {
+  results = [];
   fetch(
     `https://api.timfshare.com/v1/string-query-search?query=${query}`,
     apiHeaders
   )
     .then((res) => res.json())
-    .then((result1) => {
-      if (result1.data.length > 150) {
-        Promise.all(
-          ['00',...Array(10)
-            .fill(0)]
-            .map((_, index) =>
-              fetch(
-                `https://api.timfshare.com/v1/string-query-search?query=${query}${_?`${_}`:` ${index}`}`,
-                apiHeaders
-              ).then((res) => res.json())
-            )
-        ).then((result) => {
-          ids = {};
-          movies = [];
-          result.forEach(({ data = [] }) => {
-            data.forEach(({ id, ...rest }) => {
-              if (!ids[id]) {
-                movies.push({ id, ...rest });
-                ids[id] = true;
-              }
-            });
-          });
-          callback(movies);
+    .then((_ = {}) => {
+      results = _.data || [];
+      if (results.length < 150) return callback(results);
+
+      Promise.all(
+        ["00", ...Array(10).fill(0)].map((_, index) =>
+          fetch(
+            `https://api.timfshare.com/v1/string-query-search?query=${query}${
+              _ ? `${_}` : ` ${index}`
+            }`,
+            apiHeaders
+          ).then((res) => res.json())
+        )
+      ).then((__ = []) => {
+        __.forEach((_r) => {
+          results = [...results, ...(_r.data || [])];
         });
-      } else {
-        callback(result1.data);
-      }
+        ids = {};
+        movies = [];
+        results.forEach(({ id, ...rest }) => {
+          if (!ids[id]) {
+            movies.push({ id, ...rest });
+            ids[id] = true;
+          }
+        });
+
+        return callback(movies);
+      });
     });
 }
 
